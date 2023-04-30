@@ -4,11 +4,21 @@ Summary:	Decode camera RAW files
 Name:		libopenraw
 Version:	0.3.5
 Release:	1%{?dist}
-License:	LGPLv3+
+
+SourceLicense:  LGPL-3.0-or-later
+# licenses of statically linked Rust crates:
+# (MIT OR Apache-2.0) AND Unicode-DFS-2016
+# LPGPL-3.0
+# MIT
+# MIT OR Apache-2.0
+# MPL-2.0
+# Unlicense OR MIT
+License:        LGPL-3.0-or-later AND LPGPL-3.0 AND MIT AND MPL-2.0 AND Unicode-DFS-2016 AND (MIT OR Apache-2.0) AND (Unlicense OR MIT)
+
 URL:		http://libopenraw.freedesktop.org/libopenraw
 Source0:	http://libopenraw.freedesktop.org/download/%{name}-%{version}.tar.xz
 
-Patch:      0001-mp4-various-fixes-to-fix-building-Rust-code.patch
+Patch:          0001-mp4-various-fixes-to-fix-building-Rust-code.patch
 
 BuildRequires:  boost-devel
 BuildRequires:  gcc-c++
@@ -19,6 +29,11 @@ BuildRequires:  pkgconfig(glib-2.0)
 BuildRequires:  pkgconfig(libcurl)
 BuildRequires:  pkgconfig(libxml-2.0) >= 2.5.0
 BuildRequires:  rust-packaging >= 21
+
+# libopenraw bundles forks of the mp4parse and mp4parse_capi Rust crates
+# FIXME: MPL-2.0 license file is missing from published tarballs
+Provides:       bundled(crate(mp4parse)) = 0.12.0
+Provides:       bundled(crate(mp4parse_capi)) = 0.12.0
 
 %description
 libopenraw is an ongoing project to provide a free software
@@ -81,6 +96,11 @@ cd ../..
 # Omit unused direct shared library dependencies.
 sed --in-place --expression 's! -shared ! -Wl,--as-needed\0!g' libtool
 %{make_build}
+# generate license information about statically linked Rust components
+cd lib/mp4
+%cargo_license_summary
+%{cargo_license} > ../../LICENSE.dependencies
+cd ../..
 
 %if %{with check}
 %check
@@ -97,7 +117,7 @@ find $RPM_BUILD_ROOT -type f -name "*.la" -delete
 
 
 %files
-%license COPYING
+%license COPYING COPYING.LESSER LICENSE.dependencies
 %doc AUTHORS ChangeLog NEWS README TODO
 %{_libdir}/%{name}.so.*
 
