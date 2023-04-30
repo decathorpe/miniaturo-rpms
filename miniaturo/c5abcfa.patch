@@ -1,0 +1,158 @@
+From c5abcfa1914eb2f7524c94f9ef3ada6cc32bcf44 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Hubert=20Figui=C3=A8re?= <hub@figuiere.net>
+Date: Sun, 6 Nov 2022 20:58:28 -0500
+Subject: [PATCH] Use the libopenraw crate
+
+- Update to the light API change
+- Update libopenraw in CI to 0.3.2
+---
+ .github/workflows/ci.yml | 12 ++++++------
+ Cargo.lock               | 20 +++++++++++---------
+ Cargo.toml               |  2 +-
+ src/main.rs              | 17 +++++++----------
+ 4 files changed, 25 insertions(+), 26 deletions(-)
+
+diff --git a/.github/workflows/ci.yml b/.github/workflows/ci.yml
+index 81eaa8d..8d7b071 100644
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -33,9 +33,9 @@ jobs:
+              libboost-test-dev libjpeg-dev libxml2-dev
+       - name: Install libopenraw
+         run: |
+-          curl -O https://libopenraw.freedesktop.org/download/libopenraw-0.3.0.tar.bz2 &&
+-          tar xf libopenraw-0.3.0.tar.bz2 &&
+-          cd libopenraw-0.3.0 &&
++          curl -O https://libopenraw.freedesktop.org/download/libopenraw-0.3.2.tar.bz2 &&
++          tar xf libopenraw-0.3.2.tar.bz2 &&
++          cd libopenraw-0.3.2 &&
+           ./configure &&
+           make -j4 &&
+           sudo make install
+@@ -81,9 +81,9 @@ jobs:
+              libboost-test-dev libjpeg-dev libxml2-dev
+       - name: Install libopenraw
+         run: |
+-          curl -O https://libopenraw.freedesktop.org/download/libopenraw-0.3.0.tar.bz2 &&
+-          tar xf libopenraw-0.3.0.tar.bz2 &&
+-          cd libopenraw-0.3.0 &&
++          curl -O https://libopenraw.freedesktop.org/download/libopenraw-0.3.2.tar.bz2 &&
++          tar xf libopenraw-0.3.2.tar.bz2 &&
++          cd libopenraw-0.3.2 &&
+           ./configure &&
+           make -j4 &&
+           sudo make install
+diff --git a/Cargo.lock b/Cargo.lock
+index cc5d0ad..edff511 100644
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -54,9 +54,9 @@ dependencies = [
+ 
+ [[package]]
+ name = "bytemuck"
+-version = "1.12.2"
++version = "1.12.3"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "5aec14f5d4e6e3f927cd0c81f72e5710d95ee9019fbeb4b3021193867491bfd8"
++checksum = "aaa3a8d9a1ca92e282c96a32d6511b695d7d994d1d102ba85d279f9b2756947f"
+ 
+ [[package]]
+ name = "byteorder"
+@@ -225,17 +225,19 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "fc7fcc620a3bff7cdd7a365be3376c97191aeaccc2a603e600951e452615bf89"
+ 
+ [[package]]
+-name = "libopenraw-rs"
+-version = "0.1.0"
+-source = "git+https://gitlab.freedesktop.org/libopenraw/libopenraw-rs.git?rev=f992e4ffd132dde852226bd13af1ea6d0a15e42e#f992e4ffd132dde852226bd13af1ea6d0a15e42e"
++name = "libopenraw"
++version = "0.1.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "414d2b5483e374e36f017e25a5282bdd14da22342083d5bf0a70e57be3a55441"
+ dependencies = [
+- "libopenraw-rs-sys",
++ "libopenraw-sys",
+ ]
+ 
+ [[package]]
+-name = "libopenraw-rs-sys"
++name = "libopenraw-sys"
+ version = "0.1.0"
+-source = "git+https://gitlab.freedesktop.org/libopenraw/libopenraw-rs.git?rev=f992e4ffd132dde852226bd13af1ea6d0a15e42e#f992e4ffd132dde852226bd13af1ea6d0a15e42e"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "8e3aec37ce96df68e55a700e063ce233fee7b3910a4c43d31f7138d919b8ec0e"
+ dependencies = [
+  "pkg-config",
+ ]
+@@ -260,7 +262,7 @@ dependencies = [
+  "assert_cmd",
+  "clap",
+  "image",
+- "libopenraw-rs",
++ "libopenraw",
+ ]
+ 
+ [[package]]
+diff --git a/Cargo.toml b/Cargo.toml
+index e8bb9f8..10eaca5 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -10,7 +10,7 @@ license = "GPL-3.0+"
+ anyhow = "1"
+ clap = { version = "4", features = ["std", "derive", "help", "usage", "cargo", "error-context", "wrap_help"], default-features = false }
+ image = { version = "0.24", features = ["png", "jpeg", "tiff"], default-features = false }
+-libopenraw-rs = { git = "https://gitlab.freedesktop.org/libopenraw/libopenraw-rs.git", rev = "f992e4ffd132dde852226bd13af1ea6d0a15e42e" }
++libopenraw = "0.1.1"
+ 
+ [dev-dependencies]
+ assert_cmd = "2"
+diff --git a/src/main.rs b/src/main.rs
+index f92a940..31856c3 100644
+--- a/src/main.rs
++++ b/src/main.rs
+@@ -4,7 +4,6 @@ use std::path::{Path, PathBuf};
+ use anyhow::{bail, Result};
+ use clap::{arg, command, Parser};
+ use image::{imageops::FilterType, DynamicImage, ImageFormat};
+-use libopenraw_rs as libopenraw;
+ 
+ #[derive(Parser, Debug)]
+ #[command(
+@@ -114,11 +113,11 @@ fn to_image(thumbnail: &libopenraw::Thumbnail) -> Result<image::DynamicImage> {
+     let format = thumbnail.get_format();
+     use libopenraw::DataType;
+     Ok(match format {
+-        DataType::OR_DATA_TYPE_JPEG | DataType::OR_DATA_TYPE_PNG | DataType::OR_DATA_TYPE_TIFF => {
++        DataType::Jpeg | DataType::Png | DataType::Tiff => {
+             let format = match format {
+-                DataType::OR_DATA_TYPE_JPEG => image::ImageFormat::Jpeg,
+-                DataType::OR_DATA_TYPE_PNG => image::ImageFormat::Png,
+-                DataType::OR_DATA_TYPE_TIFF => image::ImageFormat::Tiff,
++                DataType::Jpeg => image::ImageFormat::Jpeg,
++                DataType::Png => image::ImageFormat::Png,
++                DataType::Tiff => image::ImageFormat::Tiff,
+                 _ => unreachable!(),
+             };
+ 
+@@ -126,7 +125,7 @@ fn to_image(thumbnail: &libopenraw::Thumbnail) -> Result<image::DynamicImage> {
+             reader.set_format(format);
+             reader.decode()?
+         }
+-        DataType::OR_DATA_TYPE_PIXMAP_8RGB => {
++        DataType::Pixmap8Rgb => {
+             let (x, y) = thumbnail.get_dimensions();
+             if let Some(img) = image::RgbImage::from_raw(x, y, data.to_vec()) {
+                 image::DynamicImage::ImageRgb8(img)
+@@ -143,10 +142,8 @@ fn main() -> anyhow::Result<()> {
+     let opts: Opts = Opts::parse();
+ 
+     // Create a new rawfile
+-    let rawfile = libopenraw::RawFile::from_file(
+-        &opts.input_path,
+-        libopenraw::RawFileType::OR_RAWFILE_TYPE_UNKNOWN,
+-    )?;
++    let rawfile =
++        libopenraw::RawFile::from_file(&opts.input_path, libopenraw::RawFileType::Unknown)?;
+ 
+     // Get thumbnail
+     let thumbnail = rawfile.get_thumbnail(opts.thumbnail_size)?;

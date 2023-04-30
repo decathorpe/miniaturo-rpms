@@ -1,0 +1,6 @@
+COPYING
+*.src.rpm
+*.crate
+*.tar.gz
+*.tar.xz
+
