@@ -64,7 +64,7 @@ install -Dpm 644 %{SOURCE101} %{buildroot}%{_datadir}/mime/packages/miniaturo.xm
 %doc RELEASING.md
 %{_bindir}/miniaturo
 %{_datadir}/mime/packages/miniaturo.xml
-%{_datadir}/thumbnailers
+%{_datadir}/thumbnailers/
 
 %changelog
 %autochangelog
