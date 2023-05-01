@@ -20,6 +20,8 @@ License:        GPL-3.0+ AND MIT AND MPL-2.0 AND (0BSD OR MIT OR Apache-2.0) AND
 
 URL:            https://github.com/dbrgn/miniaturo
 Source:         %{url}/archive/v%{version}/miniaturo-%{version}.tar.gz
+Source100:      miniaturo.thumbnailer
+Source101:      miniaturo.xml
 
 # upstream patches to support the latest version of the libopenraw crate
 Patch:          https://github.com/dbrgn/miniaturo/commit/103dd19.patch
@@ -44,6 +46,8 @@ A RAW image thumbnailer.
 
 %install
 %cargo_install
+%{__install} -Dpm 644 %{SOURCE100} %{buildroot}%{_datadir}/thumbnailers/miniaturo.thumbnailer
+%{__install} -Dpm 644 %{SOURCE101} %{buildroot}%{_datadir}/mime/packages/miniaturo.xml
 
 %if %{with check}
 %check
@@ -58,6 +62,8 @@ A RAW image thumbnailer.
 %doc README.md
 %doc RELEASING.md
 %{_bindir}/miniaturo
+%{_datadir}/mime/packages/miniaturo.xml
+%{_datadir}/thumbnailers/miniaturo.thumbnailer
 
 %changelog
 %autochangelog
