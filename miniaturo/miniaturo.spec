@@ -28,6 +28,7 @@ Patch:          https://github.com/dbrgn/miniaturo/commit/103dd19.patch
 Patch:          https://github.com/dbrgn/miniaturo/commit/c5abcfa.patch
 
 BuildRequires:  rust-packaging >= 23
+Requires:       shared-mime-info
 
 %description
 A RAW image thumbnailer.
@@ -46,8 +47,8 @@ A RAW image thumbnailer.
 
 %install
 %cargo_install
-%{__install} -Dpm 644 %{SOURCE100} %{buildroot}%{_datadir}/thumbnailers/miniaturo.thumbnailer
-%{__install} -Dpm 644 %{SOURCE101} %{buildroot}%{_datadir}/mime/packages/miniaturo.xml
+install -Dpm 644 %{SOURCE100} %{buildroot}%{_datadir}/thumbnailers/miniaturo.thumbnailer
+install -Dpm 644 %{SOURCE101} %{buildroot}%{_datadir}/mime/packages/miniaturo.xml
 
 %if %{with check}
 %check
@@ -63,7 +64,7 @@ A RAW image thumbnailer.
 %doc RELEASING.md
 %{_bindir}/miniaturo
 %{_datadir}/mime/packages/miniaturo.xml
-%{_datadir}/thumbnailers/miniaturo.thumbnailer
+%{_datadir}/thumbnailers
 
 %changelog
 %autochangelog
